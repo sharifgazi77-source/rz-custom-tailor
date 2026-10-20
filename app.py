@@ -22,7 +22,8 @@ elif database_url.startswith("postgresql://") and "+psycopg" not in database_url
 app.config["SQLALCHEMY_DATABASE_URI"] = database_url
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["UPLOAD_FOLDER"] = ROOT / "static" / "uploads"
-app.config["MAX_CONTENT_LENGTH"] = 8 * 1024 * 1024
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # সর্বোচ্চ ১৬ এমবি পর্যন্ত ফাইল সাইজ লিমিট
+
 app.config["SESSION_COOKIE_HTTPONLY"] = True
 app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
 app.config["SESSION_COOKIE_SECURE"] = os.getenv("APP_ENV", "development") == "production"
