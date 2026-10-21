@@ -16,7 +16,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
 
 load_dotenv()
-ROOT = Path(_file_).resolve().parent
+ROOT = Path(__file__).resolve().parent
 
 # Supabase কনফিগারেশন এবং আপলোড ফাংশন
 from supabase import create_client, Client
