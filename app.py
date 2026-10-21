@@ -434,7 +434,19 @@ def admin():
             product = db.session.get(Product, int(product_id)) if product_id else Product()
             product.name = request.form.get("name", "").strip()[:140]
             product.category_id = int(request.form.get("category_id", "0"))
-            product.description = request.form.get("description", "").strip()[:1000]
+            cat_input = request.form.get("category_id", "").strip()
+            category_id = None
+            if cat_input:
+                if cat_input.isdigit():
+                    category_id = int(cat_input)
+                else:
+                    cat_obj = Category.query.filter_by(name=cat_input).first()
+                    if not cat_obj:
+                        cat_obj = Category(name=cat_input)
+                        db.session.add(cat_obj)
+                        db.session.commit()
+                    category_id = cat_obj.id
+            product.category_id = category_id
             product.price = float(request.form.get("price", "0") or 0)
             product.color = request.form.get("color", "#26343b")[:30]
             product.colors = request.form.get("colors", "")[:500]
