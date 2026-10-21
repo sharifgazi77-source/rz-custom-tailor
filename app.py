@@ -40,7 +40,7 @@ def upload_to_supabase(file):
         print(f"Supabase Upload Error: {e}")
         return None
 
-app = Flask(_name_)
+app = Flask(__name__)
 app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "rz-demo-change-this-key")
 database_url = os.getenv("DATABASE_URL", "sqlite:///rz_demo.db")
 if database_url.startswith("postgres://"):
