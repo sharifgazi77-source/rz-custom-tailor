@@ -433,7 +433,7 @@ def admin():
             product_id = request.form.get("product_id")
             product = db.session.get(Product, int(product_id)) if product_id else Product()
             product.name = request.form.get("name", "").strip()[:140]
-            product.category_id = int(request.form.get("category_id", "0"))
+            roduct.category_id = int(request.form.get("category_id", "0"))
             cat_input = request.form.get("category_id", "").strip()
             category_id = None
             if cat_input:
