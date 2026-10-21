@@ -12,6 +12,35 @@ from werkzeug.utils import secure_filename
 
 load_dotenv()
 ROOT = Path(__file__).resolve().parent
+
+# Supabase কনফিগারেশন এবং আপলোড ফাংশন
+from supabase import create_client, Client
+
+SUPABASE_URL = os.environ.get("SUPABASE_URL")
+SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
+SUPABASE_BUCKET = os.environ.get("SUPABASE_BUCKET", "media")
+
+supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+
+
+def upload_to_supabase(file):
+    if not file or file.filename == '':
+        return None
+    try:
+        file_name = file.filename
+        file_bytes = file.read()
+
+        supabase.storage.from_(SUPABASE_BUCKET).upload(
+            path=file_name,
+            file=file_bytes,
+            file_options={"content-type": file.content_type, "upsert": "true"}
+        )
+
+        public_url = supabase.storage.from_(SUPABASE_BUCKET).get_public_url(file_name)
+        return public_url
+    except Exception as e:
+        print(f"Supabase Upload Error: {e}")
+        return None
 app = Flask(__name__)
 app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "rz-demo-change-this-key")
 database_url = os.getenv("DATABASE_URL", "sqlite:///rz_demo.db")
@@ -362,7 +391,15 @@ def admin():
     if request.method == "POST":
         action = request.form.get("action")
         if action == "settings":
-            required_missing = any(key in request.form and not request.form.get(key, "").strip() for key in ("brand", "email"))
+            # হিরো ব্যানার আপলোড হ্যান্ডেল করার জন্য
+            if 'hero_banner' in request.files:
+                file = request.files['hero_banner']
+                if file and file.filename != '':
+                    filename = secure_filename(file.filename)
+                    # ছবিটিকে static ফোল্ডারে সেভ করা
+                    file.save(os.path.join('static', filename))
+                    # ডেটাবেজে ফাইলের নাম বা পাথ সেভ করা
+                    Setting.set_value('hero_banner', filename)
             if required_missing:
                 flash("Brand name and public email cannot be empty.", "error")
             else:
