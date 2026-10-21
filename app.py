@@ -3,7 +3,6 @@ import re
 import uuid
 from functools import wraps
 from pathlib import Path
-
 from dotenv import load_dotenv
 from flask import Flask, flash, redirect, render_template, request, session, url_for
 from flask_sqlalchemy import SQLAlchemy
@@ -11,7 +10,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
 
 load_dotenv()
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(_file_).resolve().parent
 
 # Supabase কনফিগারেশন এবং আপলোড ফাংশন
 from supabase import create_client, Client
@@ -21,7 +20,6 @@ SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
 SUPABASE_BUCKET = os.environ.get("SUPABASE_BUCKET", "media")
 
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
-
 
 def upload_to_supabase(file):
     if not file or file.filename == '':
@@ -41,7 +39,8 @@ def upload_to_supabase(file):
     except Exception as e:
         print(f"Supabase Upload Error: {e}")
         return None
-app = Flask(__name__)
+
+app = Flask(_name_)
 app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "rz-demo-change-this-key")
 database_url = os.getenv("DATABASE_URL", "sqlite:///rz_demo.db")
 if database_url.startswith("postgres://"):
@@ -51,7 +50,7 @@ elif database_url.startswith("postgresql://") and "+psycopg" not in database_url
 app.config["SQLALCHEMY_DATABASE_URI"] = database_url
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["UPLOAD_FOLDER"] = ROOT / "static" / "uploads"
-app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # সর্বোচ্চ ১৬ এমবি পর্যন্ত ফাইল সাইজ লিমিট
+app.config["MAX_CONTENT_LENGTH"] = 16 * 1024 * 1024  # সর্বোচ্চ ১৬ এমবি পর্যন্ত ফাইল সাইজ লিমিট
 
 app.config["SESSION_COOKIE_HTTPONLY"] = True
 app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
@@ -59,7 +58,6 @@ app.config["SESSION_COOKIE_SECURE"] = os.getenv("APP_ENV", "development") == "pr
 if database_url.startswith("sqlite"):
     Path(app.instance_path).mkdir(parents=True, exist_ok=True)
 db = SQLAlchemy(app)
-
 
 class Product(db.Model):
     id = db.Column(db.Integer, primary_key=True)
