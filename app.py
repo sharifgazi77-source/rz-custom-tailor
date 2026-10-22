@@ -18,7 +18,7 @@ SUPABASE_URL = os.environ.get("SUPABASE_URL")
 SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
 SUPABASE_BUCKET = os.environ.get("SUPABASE_BUCKET", "media")
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
-def upload_to_supabase(file):
+ef upload_to_supabase(file):
     if not file or file.filename == '':
         return None
     try:
@@ -33,30 +33,9 @@ def upload_to_supabase(file):
         public_url = supabase.storage.from_(SUPABASE_BUCKET).get_public_url(file_name)
         return public_url
     except Exception as e:
-        print(e)
-        return None
-            try:
-                file_name = file.filename
-                file_bytes = file.read()
-
-                supabase.storage.from_(SUPABASE_BUCKET).upload(
-                    path=file_name,
-                    file=file_bytes,
-                    file_options={"content-type": file.content_type}
-                )
-                public_url = supabase.storage.from_(SUPABASE_BUCKET).get_public_url(file_name)
-                return public_url
-            except Exception as e:
-                print(e)
-                return None
-
-        public_url = supabase.storage.from_(SUPABASE_BUCKET).get_public_url(file_name)
-        return public_url
-    except Exception as e:
         print(f"Supabase Upload Error: {e}")
         return None
-
-app = Flask(__name__)
+app = Flask(_name_)
 app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "rz-demo-change-this-key")
 database_url = os.getenv("DATABASE_URL", "sqlite:///rz_demo.db")
 if database_url.startswith("postgres://"):
