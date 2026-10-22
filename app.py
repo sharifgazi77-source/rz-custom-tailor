@@ -10,7 +10,8 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
 
 load_dotenv()
-ROOT = Path(_file_).resolve().parent
+ROOT = Path(__file__).resolve().parent
+app = Flask(__name__)
 
 # Supabase কনফিগারেশন এবং আপলোড ফাংশন
 from supabase import create_client, Client
@@ -34,29 +35,32 @@ def upload_to_supabase(file):
         return public_url
     except Exception as e:
         print(f"Supabase Upload Error: {e}")
-        return None
 app.config["UPLOAD_FOLDER"] = ROOT / "static" / "uploads"
-app.config["MAX_CONTENT_LENGTH"] = 16 * 1024 * 1024  # সর্বোচ্চ ১৬ এমবি পর্যন্ত ফাইল সাইজ লিমিট
-
+app.config["MAX_CONTENT_LENGTH"] = 16 * 1024 * 1024
 app.config["SESSION_COOKIE_HTTPONLY"] = True
 app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
 app.config["SESSION_COOKIE_SECURE"] = os.getenv("APP_ENV", "development") == "production"
+
+database_url = os.environ.get("DATABASE_URL", f"sqlite:///{ROOT / 'instance' / 'app.db'}")
+app.config["SQLALCHEMY_DATABASE_URI"] = database_url
+
 if database_url.startswith("sqlite"):
     Path(app.instance_path).mkdir(parents=True, exist_ok=True)
+
 db = SQLAlchemy(app)
-
-class Product(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(140), nullable=False)
-    image = db.Column(db.String(300), nullable=False, default="")
-    featured = db.Column(db.Boolean, default=False)
-
 class Category(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(80), unique=True, nullable=False)
     slug = db.Column(db.String(90), unique=True, nullable=False)
     color = db.Column(db.String(30), nullable=False, default="#77796d")
-
+class Product(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(140), nullable=False)
+    image = db.Column(db.String(300), nullable=False, default="")
+    featured = db.Column(db.Boolean, default=False)
+    price = db.Column(db.Numeric(10, 2), nullable=False, default=0.0)  # এই লাইনটি নতুন যোগ করুন
+    category_id = db.Column(db.Integer, db.ForeignKey('category.id'), nullable=True)
+    category = db.relationship('Category', backref=db.backref('products', lazy=True))
 class Order(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     customer = db.Column(db.String(140), nullable=False)
@@ -375,6 +379,7 @@ def admin():
                     file.save(os.path.join('static', filename))
                     # ডেটাবেজে ফাইলের নাম বা পাথ সেভ করা
                     Setting.set_value('hero_banner', filename)
+                    required_missing = not request.form.get("brand_name") or not request.form.get("public_email")
             if required_missing:
                 flash("Brand name and public email cannot be empty.", "error")
             else:
@@ -449,16 +454,16 @@ def admin():
             db.session.add(product)
             db.session.commit()
             flash(message="Product saved to the catalog.", category="success")
-       if action == "category":
-        name = request.form.get("name", "").strip()[:80]
-        slug = re.sub(r"[^a-zA-Z0-9]+", "-", name.lower()).strip("-")
-        if name and slug and not Category.query.filter_by(slug=slug).first():
-            db.session.add(Category(name=name, slug=slug, color=request.form.get("color", "#77796d")))
-            db.session.commit()
-            flash("Product category added.", "success")
+        if action == "category":
+            name = request.form.get("name", "").strip()[:80]
+            slug = re.sub(r"[^a-zA-Z0-9]+", "-", name.lower()).strip("-")
+            if name and slug and not Category.query.filter_by(slug=slug).first():
+                db.session.add(Category(name=name, slug=slug, color=request.form.get("color", "#77796d")))
+                db.session.commit()
+                flash("Product category added.", "success")
         else:
             flash("Enter a category name that is not already in the list.", "error")
-        elif action == "delete_category":
+        if action == "delete_category":
             category = db.session.get(Category, int(request.form.get("category_id", "0")))
             if category:
                 if Product.query.filter_by(category_id=category.id).count():
@@ -467,7 +472,7 @@ def admin():
                     db.session.delete(category)
                     db.session.commit()
                     flash("Category removed.", "success")
-        elif action == "testimonial":
+        if action == "testimonial":
             testimonial_id = request.form.get("testimonial_id")
             testimonial = db.session.get(Testimonial, int(testimonial_id)) if testimonial_id else Testimonial()
             testimonial.customer_name = request.form.get("customer_name", "").strip()[:120]
@@ -527,6 +532,6 @@ with app.app_context():
 
 import os
 
-if _name_ == "_main_":
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port)
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 5000) or 5000)
+    app.run(host="0.0.0.0", port=port, debug=True)
