@@ -406,10 +406,9 @@ def admin():
                 db.session.commit()
 
         if action == "product":
-        product_id = request.form.get("product_id")
-        product = db.session.get(Product, int(product_id)) if product_id else Product()
-        product.name = request.form.get("name", "").strip()[:140]
-
+            product_id = request.form.get("product_id")
+            product = db.session.get(Product, int(product_id)) if product_id else Product()
+            product.name = request.form.get("name", "").strip()[:140]
         cat_input = request.form.get("category_id", "").strip()
         category_id = None
         if cat_input:
