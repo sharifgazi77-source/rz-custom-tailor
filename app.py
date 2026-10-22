@@ -14,14 +14,11 @@ ROOT = Path(__file__).resolve().parent
 
 # Supabase কনফিগারেশন এবং আপলোড ফাংশন
 from supabase import create_client, Client
-
 SUPABASE_URL = os.environ.get("SUPABASE_URL")
 SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
-SUPABASE_BUCKET = os.environ.get("SUPABASE_BUCKET","media")
-)
+SUPABASE_BUCKET = os.environ.get("SUPABASE_BUCKET", "media")
+
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
-
-
 def upload_to_supabase(file):
     if not file or file.filename == '':
         return None
