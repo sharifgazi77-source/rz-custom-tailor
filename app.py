@@ -44,16 +44,18 @@ app.config["SESSION_COOKIE_SECURE"] = os.getenv("APP_ENV", "development") == "pr
 if database_url.startswith("sqlite"):
     Path(app.instance_path).mkdir(parents=True, exist_ok=True)
 db = SQLAlchemy(app)
+
+class Product(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(140), nullable=False)
     image = db.Column(db.String(300), nullable=False, default="")
     featured = db.Column(db.Boolean, default=False)
-
 
 class Category(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(80), unique=True, nullable=False)
     slug = db.Column(db.String(90), unique=True, nullable=False)
     color = db.Column(db.String(30), nullable=False, default="#77796d")
-
 
 class Order(db.Model):
     id = db.Column(db.Integer, primary_key=True)
