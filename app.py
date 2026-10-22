@@ -449,7 +449,7 @@ def admin():
             db.session.add(product)
             db.session.commit()
             flash(message="Product saved to the catalog.", category="success")
-        elif action == "category":
+       if action == "category":
         name = request.form.get("name", "").strip()[:80]
         slug = re.sub(r"[^a-zA-Z0-9]+", "-", name.lower()).strip("-")
         if name and slug and not Category.query.filter_by(slug=slug).first():
