@@ -18,7 +18,6 @@ SUPABASE_URL = os.environ.get("SUPABASE_URL")
 SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
 SUPABASE_BUCKET = os.environ.get("SUPABASE_BUCKET", "media")
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
-
 def upload_to_supabase(file):
     if not file or file.filename == '':
         return None
@@ -36,16 +35,6 @@ def upload_to_supabase(file):
     except Exception as e:
         print(f"Supabase Upload Error: {e}")
         return None
-
-app = Flask(_name_)
-app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "rz-demo-change-this-key")
-database_url = os.getenv("DATABASE_URL", "sqlite:///rz_demo.db")
-if database_url.startswith("postgres://"):
-    database_url = database_url.replace("postgres://", "postgresql+psycopg://", 1)
-elif database_url.startswith("postgresql://") and "+psycopg" not in database_url:
-    database_url = database_url.replace("postgresql://", "postgresql+psycopg://", 1)
-app.config["SQLALCHEMY_DATABASE_URI"] = database_url
-app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["UPLOAD_FOLDER"] = ROOT / "static" / "uploads"
 app.config["MAX_CONTENT_LENGTH"] = 16 * 1024 * 1024  # সর্বোচ্চ ১৬ এমবি পর্যন্ত ফাইল সাইজ লিমিট
 
