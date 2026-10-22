@@ -17,9 +17,10 @@ from supabase import create_client, Client
 
 SUPABASE_URL = os.environ.get("SUPABASE_URL")
 SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
-SUPABASE_BUCKET = os.environ.get("SUPABASE_BUCKET", "media")
-
+SUPABASE_BUCKET = os.environ.get("SUPABASE_BUCKET","media")
+)
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+
 
 def upload_to_supabase(file):
     if not file or file.filename == '':
@@ -31,8 +32,27 @@ def upload_to_supabase(file):
         supabase.storage.from_(SUPABASE_BUCKET).upload(
             path=file_name,
             file=file_bytes,
-            file_options={"content-type": file.content_type, "upsert": "true"}
+            file_options={"content-type": file.content_type}
         )
+        public_url = supabase.storage.from_(SUPABASE_BUCKET).get_public_url(file_name)
+        return public_url
+    except Exception as e:
+        print(e)
+        return None
+            try:
+                file_name = file.filename
+                file_bytes = file.read()
+
+                supabase.storage.from_(SUPABASE_BUCKET).upload(
+                    path=file_name,
+                    file=file_bytes,
+                    file_options={"content-type": file.content_type}
+                )
+                public_url = supabase.storage.from_(SUPABASE_BUCKET).get_public_url(file_name)
+                return public_url
+            except Exception as e:
+                print(e)
+                return None
 
         public_url = supabase.storage.from_(SUPABASE_BUCKET).get_public_url(file_name)
         return public_url
@@ -442,20 +462,14 @@ def admin():
                 else:
                     cat_obj = Category.query.filter_by(name=cat_input).first()
                     if not cat_obj:
-                        cat_obj = Category(name=cat_input)
-                        db.session.add(cat_obj)
-                        db.session.commit()
-                    category_id = cat_obj.id
-            product.category_id = category_id
-            product.price = float(request.form.get("price", "0") or 0)
-            product.color = request.form.get("color", "#26343b")[:30]
-            product.colors = request.form.get("colors", "")[:500]
-            product.sizes = request.form.get("sizes", "")[:250]
-            product.featured = request.form.get("featured") == "on"
-            uploaded = save_uploaded_image(request.files.get("photo"))
-            if uploaded:
-                product.image = uploaded
-            if not product.name:
+                        product.featured = request.form.get("featured") == "on"
+
+                        # এখানে পুরনো লোকাল ফাংশনের বদলে আমাদের Supabase আপলোড ফাংশনটি বসিয়ে দিলাম:
+                        uploaded = upload_to_supabase(request.files.get("photo"))
+                        if uploaded:
+                            product.image = uploaded
+
+                        if not product.name:
                 flash("Product name is required.", "error")
             else:
                 db.session.add(product)
