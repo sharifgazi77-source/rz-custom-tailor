@@ -451,14 +451,14 @@ def admin():
             db.session.commit()
             flash(message="Product saved to the catalog.", category="success")
         elif action == "category":
-            name = request.form.get("name", "").strip()[:80]
-            slug = re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-")
-            if name and slug and not Category.query.filter_by(slug=slug).first():
-                db.session.add(Category(name=name, slug=slug, color=request.form.get("color", "#77796d")[:30]))
-                db.session.commit()
-                flash("Product category added.", "success")
-            else:
-                flash("Enter a category name that is not already in the list.", "error")
+        name = request.form.get("name", "").strip()[:80]
+        slug = re.sub(r"[^a-zA-Z0-9]+", "-", name.lower()).strip("-")
+        if name and slug and not Category.query.filter_by(slug=slug).first():
+            db.session.add(Category(name=name, slug=slug, color=request.form.get("color", "#77796d")))
+            db.session.commit()
+            flash("Product category added.", "success")
+        else:
+            flash("Enter a category name that is not already in the list.", "error")
         elif action == "delete_category":
             category = db.session.get(Category, int(request.form.get("category_id", "0")))
             if category:
