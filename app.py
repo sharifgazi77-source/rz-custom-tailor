@@ -447,40 +447,52 @@ def admin():
                 if new_password:
                     password_setting.value = generate_password_hash(new_password)
                 db.session.commit()
-                session["admin_user"] = username
-                flash("Admin account settings updated.", "success")
-        elif action == "product":
-            product_id = request.form.get("product_id")
-            product = db.session.get(Product, int(product_id)) if product_id else Product()
-            product.name = request.form.get("name", "").strip()[:140]
+        lif
+        action == "product":
+        product_id = request.form.get("product_id")
+        product = db.session.get(Product, int(product_id)) if product_id else Product()
+        product.name = request.form.get("name", "").strip()[:140]
 
-            cat_input = request.form.get("category_id", "").strip()
-            category_id = None
-            if cat_input:
-                if cat_input.isdigit():
-                    category_id = int(cat_input)
-                else:
-                    cat_obj = Category.query.filter_by(name=cat_input).first()
-                    if not cat_obj:
-                        product.featured = request.form.get("featured") == "on"
-
-                        # এখানে পুরনো লোকাল ফাংশনের বদলে আমাদের Supabase আপলোড ফাংশনটি বসিয়ে দিলাম:
-                        uploaded = upload_to_supabase(request.files.get("photo"))
-                        if uploaded:
-                            product.image = uploaded
-
-                        if not product.name:
-                flash("Product name is required.", "error")
+        cat_input = request.form.get("category_id", "").strip()
+        category_id = None
+        if cat_input:
+            if cat_input.isdigit():
+                category_id = int(cat_input)
             else:
-                db.session.add(product)
+                cat_obj = Category.query.filter_by(name=cat_input).first()
+                if not cat_obj:
+                    cat_obj = Category(name=cat_input)
+                    db.session.add(cat_obj)
+                    db.session.commit()
+                category_id = cat_obj.id
+
+        if not category_id:
+            first_cat = Category.query.first()
+            if first_cat:
+                category_id = first_cat.id
+            else:
+                default_cat = Category(name="General")
+                db.session.add(default_cat)
                 db.session.commit()
-                flash("Product saved to the catalog.", "success")
-        elif action == "delete":
-            product = db.session.get(Product, int(request.form.get("product_id", "0")))
-            if product:
-                db.session.delete(product)
-                db.session.commit()
-                flash("Product removed from the demo catalog.", "success")
+                category_id = default_cat.id
+
+        product.category_id = category_id
+        product.price = float(request.form.get("price", "0") or 0)
+        product.color = request.form.get("color", "#26343b")[:30]
+        product.colors = request.form.get("colors", "")[:500]
+        product.sizes = request.form.get("sizes", "")[:250]
+        product.featured = request.form.get("featured") == "on"
+
+        uploaded = upload_to_supabase(request.files.get("photo"))
+        if uploaded:
+            product.image = uploaded
+
+        if not product.name:
+            flash(message="Product name is required.", category="error")
+        else:
+            db.session.add(product)
+            db.session.commit()
+            flash(message="Product saved to the catalog.", category="success")
         elif action == "category":
             name = request.form.get("name", "").strip()[:80]
             slug = re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-")
