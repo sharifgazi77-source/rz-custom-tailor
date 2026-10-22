@@ -10,7 +10,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
 
 load_dotenv()
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(_file_).resolve().parent
 
 # Supabase কনফিগারেশন এবং আপলোড ফাংশন
 from supabase import create_client, Client
@@ -18,7 +18,8 @@ SUPABASE_URL = os.environ.get("SUPABASE_URL")
 SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
 SUPABASE_BUCKET = os.environ.get("SUPABASE_BUCKET", "media")
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
-ef upload_to_supabase(file):
+
+def upload_to_supabase(file):
     if not file or file.filename == '':
         return None
     try:
@@ -35,6 +36,7 @@ ef upload_to_supabase(file):
     except Exception as e:
         print(f"Supabase Upload Error: {e}")
         return None
+
 app = Flask(_name_)
 app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "rz-demo-change-this-key")
 database_url = os.getenv("DATABASE_URL", "sqlite:///rz_demo.db")
@@ -53,17 +55,6 @@ app.config["SESSION_COOKIE_SECURE"] = os.getenv("APP_ENV", "development") == "pr
 if database_url.startswith("sqlite"):
     Path(app.instance_path).mkdir(parents=True, exist_ok=True)
 db = SQLAlchemy(app)
-
-class Product(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(140), nullable=False)
-    category_id = db.Column(db.Integer, db.ForeignKey("category.id"), nullable=False)
-    category = db.relationship("Category")
-    description = db.Column(db.Text, nullable=False, default="Made to measure, made personal.")
-    price = db.Column(db.Numeric(10, 2), nullable=False, default=649)
-    color = db.Column(db.String(30), nullable=False, default="#26343b")
-    colors = db.Column(db.String(500), nullable=False, default="Cream,Snow Wash,Navy,Grey,Taupe,Brown")
-    sizes = db.Column(db.String(250), nullable=False, default="30,32,34,36,38,40")
     image = db.Column(db.String(300), nullable=False, default="")
     featured = db.Column(db.Boolean, default=False)
 
