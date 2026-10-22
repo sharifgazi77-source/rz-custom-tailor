@@ -405,7 +405,7 @@ def admin():
                     password_setting.value = generate_password_hash(new_password)
                 db.session.commit()
 
-        elif action == "product":
+        if action == "product":
         product_id = request.form.get("product_id")
         product = db.session.get(Product, int(product_id)) if product_id else Product()
         product.name = request.form.get("name", "").strip()[:140]
