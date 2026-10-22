@@ -565,5 +565,8 @@ with app.app_context():
     init_db()
 
 
-if __name__ == "__main__":
-    app.run(debug=os.getenv("FLASK_DEBUG", "0") == "1", port=int(os.getenv("PORT", "5000")))
+import os
+
+if _name_ == "_main_":
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
